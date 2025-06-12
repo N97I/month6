@@ -24,7 +24,6 @@ class ProductSerializer(serializers.ModelSerializer):
         model = Product
         fields = '__all__'
 
-
 class ProductWithReviewsSerializer(serializers.ModelSerializer):
     # reviews = ReviewSerializer(many=True, read_only=True)
     rating = serializers.SerializerMethodField()
