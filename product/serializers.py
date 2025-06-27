@@ -2,27 +2,29 @@ from rest_framework import serializers
 from .models import Category, Product, Review
 from rest_framework.exceptions import ValidationError
 
+
 class CategorySerializer(serializers.ModelSerializer):
     products_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Category
-        fields = ['id', 'name', 'products_count']
+        fields = ["id", "name", "products_count"]
 
     def get_products_count(self, category):
-            return Product.objects.filter(category=category).count()
+        return Product.objects.filter(category=category).count()
 
 
 class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
-        fields = '__all__'
+        fields = "__all__"
 
 
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
-        fields = '__all__'
+        fields = "__all__"
+
 
 class ProductWithReviewsSerializer(serializers.ModelSerializer):
     # reviews = ReviewSerializer(many=True, read_only=True)
@@ -30,7 +32,15 @@ class ProductWithReviewsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        fields = ['id', 'title', 'description', 'price', 'category', 'reviews', 'rating']
+        fields = [
+            "id",
+            "title",
+            "description",
+            "price",
+            "category",
+            "reviews",
+            "rating",
+        ]
         depth = 1
 
     def get_rating(self, obj):
@@ -54,7 +64,7 @@ class ProductValidateSerializer(serializers.Serializer):
         try:
             return Category.objects.get(id=category_id)
         except Category.DoesNotExist:
-            raise ValidationError('Category does not exist')
+            raise ValidationError("Category does not exist")
 
 
 class ReviewValidateSerializer(serializers.Serializer):
@@ -66,4 +76,4 @@ class ReviewValidateSerializer(serializers.Serializer):
         try:
             return Product.objects.get(id=product_id)
         except Product.DoesNotExist:
-            raise ValidationError('Product does not exist')
+            raise ValidationError("Product does not exist")

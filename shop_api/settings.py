@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
+from datetime import timedelta
 import os
 from pathlib import Path
 
@@ -20,12 +21,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-# SECRET_KEY = os.environ.get('SECRET')
-SECRET_KEY = "vsdftjsd6f7yef"
+SECRET_KEY = os.environ.get('SECRET')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# DEBUG = True if os.environ.get('DEBUG') == 'on' else False
-DEBUG = True
+DEBUG = True if os.environ.get('DEBUG') == 'on' else False
+
 ALLOWED_HOSTS = []
 
 
@@ -45,6 +45,8 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'drf_yasg',
     'common',
+    'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist'
 ]
 
 MIDDLEWARE = [
@@ -61,10 +63,10 @@ MIDDLEWARE = [
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
+        # 'rest_framework.authentication.SessionAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
         'rest_framework.permissions.AllowAny'
     ]
 }
@@ -109,14 +111,27 @@ WSGI_APPLICATION = 'shop_api.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME':BASE_DIR / 'db.sqlite3',
-        # 'NAME': os.environ.get('DB_NAME'),
-        'USER': os.environ.get('DB_USER'),
-        'PASSWORD': os.environ.get('DB_PASSWORD'),
-        'HOST': os.environ.get('DB_HOST'),
-        'PORT': os.environ.get('DB_PORT'),
+        'NAME': os.environ.get('NAME_DB'),
+        'USER': os.environ.get('USER_DB'),
+        'PASSWORD': os.environ.get('PASSWORD_DB'),
+        'HOST': os.environ.get('HOST_DB'),
+        'PORT': os.environ.get('PORT_DB'),
     }
 }
+
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
+
+CELERY_BROKER_URL = "redis://127.0.0.1:6379/2"
+CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379/2"
 
 
 # Password validation
@@ -140,17 +155,38 @@ AUTH_PASSWORD_VALIDATORS = [
 AUTH_USER_MODEL = 'users.CustomUser'
 
 
-
-
 SWAGGER_SETTINGS = {
     'SECURITY_DEFINITIONS': {
         'Token': {
             'type': 'apiKey',
             'name': 'Authorization',
             'in': 'header',
-            'description': 'Example: Token 38485347t747yrgytvtsydif78sg6'
+            'description': 'Example: Token <token>'
+        },
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header',
+            'description': 'Example: Bearer <token>'
         }
-    }
+    },
+}
+
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60), # время жизни токена
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=3), # время жизни refresh
+    "ROTATE_REFRESH_TOKENS": True, # выдаёт новый refresh при обновлении
+    "BLACKLIST_AFTER_ROTATION": True, # старый refresh добавляется в чёрный список
+    "UPDATE_LAST_LOGIN": True, # обновляет время последнего входа
+
+    "ALGORITHM": "HS256", # Алгоритм шифрования
+    "SIGNING_KEY": os.environ.get('SECRET'), # Ключ для подписи токена
+
+    "AUTH_HEADER_TYPES": ("Bearer",), # Префикс в заголовке Authorization
+    "AUTH_HEADER_NAME": "HTTP_AUTHORIZATION", # Имя заголовка (в Django-формате)
+    "USER_ID_FIELD": "id",         # Поле модели пользователя, которое будет сохраняться в токен
+    "USER_ID_CLAIM": "user_id",    # Название поля в payload токена (для извлечения id)
 }
 
 # Internationalization
