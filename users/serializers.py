@@ -42,7 +42,7 @@ class ConfirmationSerializer(serializers.Serializer):
 
     def validate(self, attrs):
         user_id = attrs.get("user_id")
-        code = attrs.get("confirmation_code")
+        code = attrs.get("code")
 
         try:
             user = CustomUser.objects.get(id=user_id)
@@ -75,3 +75,6 @@ class CustomToken(TokenObtainPairSerializer):
         token["username"] = user.username
         token["birthday"] = user.birthday.strftime("%Y-%m-%d")
         return token
+
+class GoogleAuthCodeSerializer(serializers.Serializer):
+    code = serializers.CharField(required=True, help_text="Authorization code from Google")

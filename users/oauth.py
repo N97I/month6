@@ -6,8 +6,13 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
 import os
 User = get_user_model()
+from drf_yasg.utils import swagger_auto_schema
+from users.serializers import GoogleAuthCodeSerializer
 
 class GoogleAPIView(APIView):
+
+
+    @swagger_auto_schema(request_body=GoogleAuthCodeSerializer)
     def post(self, request):
         code = request.data.get("code")
         if not code:
