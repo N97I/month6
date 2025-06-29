@@ -81,32 +81,30 @@ class RegistrationAPIView(CreateAPIView):
             )
 
 
+
 class ConfirmUserAPIView(APIView):
     permission_classes = [AllowAny]
 
-    @swagger_auto_schema(request_body=ConfirmationSerializer)
     def post(self, request):
         serializer = ConfirmationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        user_id = serializer.validated_data.get("user_id")
+        user = serializer.validated_data['user']
 
         with transaction.atomic():
-            user = CustomUser.objects.get(id=user_id)
             user.is_active = True
             user.save()
-
-        cache_key = f'verify:{user.email}'
-        cache.delete(cache_key)
+            cache.delete(f'verify:{user.email}')
 
         refresh = RefreshToken.for_user(user)
+
         return Response(
-            status=status.HTTP_200_OK,
-            data={
-                "message": "User аккаунт успешно активирован",
+            {
+                "message": "Аккаунт успешно активирован",
                 "refresh": str(refresh),
                 "access": str(refresh.access_token),
             },
+            status=status.HTTP_200_OK
         )
 
 

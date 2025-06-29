@@ -36,6 +36,7 @@ class RegisterValidateSerializer(UserBaseSerializer):
         raise ValidationError("Email уже используется!")
 
 
+
 class ConfirmationSerializer(serializers.Serializer):
     user_id = serializers.IntegerField()
     code = serializers.CharField(max_length=6)
@@ -47,14 +48,16 @@ class ConfirmationSerializer(serializers.Serializer):
         try:
             user = CustomUser.objects.get(id=user_id)
         except CustomUser.DoesNotExist:
-            raise ValidationError("User не существует!")
-        
+            raise serializers.ValidationError("Пользователь не найден")
+
         cache_key = f'verify:{user.email}'
         stored_code = cache.get(cache_key)
-        if stored_code != code:
-            raise ValidationError("Неверный код подтверждения!")
-        return attrs
 
+        if stored_code != code:
+            raise serializers.ValidationError("Неверный или просроченный код подтверждения")
+
+        attrs['user'] = user 
+        return attrs
 
 class CustomToken(TokenObtainPairSerializer):
     @classmethod
