@@ -84,9 +84,11 @@ class RegistrationAPIView(CreateAPIView):
 
 class ConfirmUserAPIView(APIView):
     permission_classes = [AllowAny]
-
+    serializer_class = ConfirmationSerializer
+    
+    @swagger_auto_schema(request_body=ConfirmationSerializer)
     def post(self, request):
-        serializer = ConfirmationSerializer(data=request.data)
+        serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         user = serializer.validated_data['user']

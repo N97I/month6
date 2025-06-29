@@ -47,7 +47,8 @@ INSTALLED_APPS = [
     'common',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
-    'corsheaders'
+    'corsheaders',
+    'django_celery_beat'
 ]
 
 MIDDLEWARE = [
@@ -139,6 +140,10 @@ CACHES = {
 
 CELERY_BROKER_URL = "redis://127.0.0.1:6379/2"
 CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379/2"
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
 
 
 # Password validation
